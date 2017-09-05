@@ -1,0 +1,49 @@
+{% extends "EmergencyCommon/base.html" %}
+{% load static %}
+
+{% block head_title %}Dispatch Drone{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12 text-center">
+      <h1 class="mt-5">Dispatch Drone</h1>
+      <p class="lead">Here you can request a drone to be dispatched to an emergency</p>
+        <form method="POST" action="">{% csrf_token %}
+            {{ destination_picker.as_p }}
+        <button type="button" class="btn btn-primary" onclick="getLocation()">Update Location</button> </br></br></br>
+        <button type="submit" name="destination_submit" class="btn btn-warning" onclick="getLocation()">Send Drone to location!</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
+{{ destination_picker.media }}
+<script>
+//Trigger update on page load
+$( document ).ready(function() {
+  getLocation();
+});
+
+
+function getLocation() {
+   if (navigator.geolocation) {
+       navigator.geolocation.getCurrentPosition(updatePositionForm);
+   } else {
+       x.innerHTML = "Geolocation is not supported by this browser.";
+   }
+
+}
+function updatePositionForm(position) {
+  //Change the position input to current location
+  $('input[name="destination_0"]').val(position.coords.latitude);
+  $('input[name="destination_1"]').val(position.coords.longitude);
+  //simulate a keypress so the map updates
+  $('input[name="destination_1"]').trigger('keyup');
+}
+</script>
+{% endblock %}

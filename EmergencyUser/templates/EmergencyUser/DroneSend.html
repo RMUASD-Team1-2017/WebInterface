@@ -1,0 +1,17 @@
+{% extends "EmergencyCommon/base.html" %}
+{% load static %}
+
+{% block head_title %}Dispatching Drone{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-12 text-center">
+      <h1 class="mt-5">Dispatching Drone</h1>
+      <p class="lead">Drone is being send to the following location:</p>
+      <p>Latitude {{latitude}}</p>
+      <p>Longtitude {{longitude}} </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

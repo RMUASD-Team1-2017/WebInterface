@@ -1,0 +1,4 @@
+Django==1.11.5
+django-bootstrap4==0.0.1
+https://github.com/philippbosch/django-geoposition/archive/django-1.11.zip
+pytz==2017.2
