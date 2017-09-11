@@ -9,6 +9,8 @@ WORKDIR /usr/src/app/
 
 RUN pip install -r requirements.txt
 RUN ["chmod", "+x", "run.sh", "test.sh", "start.sh"]
+RUN apt update -y && apt install rabbitmq-server -y
+
 EXPOSE 8000
 ENTRYPOINT ["/usr/src/app/start.sh"]
 CMD ["run"]
