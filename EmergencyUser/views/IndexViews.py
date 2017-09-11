@@ -3,15 +3,14 @@ from django.views.generic import View
 from EmergencyUser.forms import DroneDestinationForm
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from EmergencyRabbitMQ import rabbit_sender, rabbit_reciever
+from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver
 
-def callback(ch, method, properties, body):
-    print(" [x] Received %r" % body)
+def callback1(ch, method, properties, body):
+    print(" [1] Received %r" % body)
 
+def callback2(ch, method, properties, body):
+    print(" [2] Received %r" % body)
 
-rabbit_reciever.get_channel().basic_consume(callback,
-                      queue='hello',
-                      no_ack=True)
 
 
 class DroneDispatch(View):
@@ -26,9 +25,6 @@ class DroneDispatch(View):
         if "destination_submit" in request.POST and destination_picker.is_valid():
             destination = destination_picker.cleaned_data["destination"]
             print("Sending drone to Latitude {}, Longitude {}".format(destination[0], destination[1]))
-            rabbit_sender.get_channel().basic_publish(exchange='',
-                      routing_key='location',
-                      body= ("Sending drone to Latitude {}, Longitude {}".format(destination[0], destination[1])))
         return HttpResponseRedirect(reverse('EmergencyUser:destination_send', kwargs = {'lat' : str(destination[0]), 'lon' : str(destination[1])}))
 
 class DroneSend(View):

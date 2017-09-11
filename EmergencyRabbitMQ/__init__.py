@@ -1,13 +1,15 @@
 import pika
 from threading import RLock, Thread
+from django.conf import settings
+def dummy_timeout():
+    pass
 
 class RabbitMQSender_():
-    global_lock = RLock()
     def __init__(self):
+        self.global_lock = RLock()
         with self.global_lock:
-            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBIT_BROKER))
             self.channel = self.connection.channel()
-            self.channel.queue_declare(queue='location')
 
 
     def get_connection(self):
@@ -19,7 +21,7 @@ class RabbitMQSender_():
 
     def reconnect(self):
         with self.global_lock:
-            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBIT_BROKER))
             self.channel = self.connection.channel()
 
     def __del__(self):
@@ -39,34 +41,36 @@ class RabbitMQSender():
 
 
 
-class RabbitMQReciever_(RabbitMQSender_):
+class RabbitMQReceiver_(RabbitMQSender_):
     def __init__(self):
-        with self.global_lock:
-            super().__init__()
-            self.channel.queue_declare(queue='hello')
+        super().__init__()
+        self.consume_thread = None
 
     def start_consuming(self):
         self.consume_thread = Thread(target = self.channel.start_consuming, daemon = True)
         self.consume_thread.start()
 
     def stop_consuming(self):
-        self.channel.basic_cancel()
+        self.connection.add_timeout(0.2, dummy_timeout)
+        self.channel.stop_consuming()
+        if self.consume_thread:
+            self.consume_thread.join()
 
     def __del__(self):
         self.stop_consuming()
-        self.join()
 
-class RabbitMQReciever():
+
+class RabbitMQReceiver():
     instance = None
     def __init__(self):
         pass
     @classmethod
     def get_instance(self):
-        if RabbitMQReciever.instance is None:
+        if RabbitMQReceiver.instance is None:
             pass
-            RabbitMQReciever.instance = RabbitMQReciever_()
-        return RabbitMQReciever.instance
+            RabbitMQReceiver.instance = RabbitMQReceiver_()
+        return RabbitMQReceiver.instance
 
 
 rabbit_sender = RabbitMQSender.get_instance()
-rabbit_reciever = RabbitMQReciever.get_instance()
+rabbit_receiver = RabbitMQReceiver.get_instance()

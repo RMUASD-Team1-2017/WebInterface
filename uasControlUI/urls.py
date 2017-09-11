@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include, static
 from django.contrib import admin
 from django.conf import settings
-from EmergencyRabbitMQ import rabbit_sender, rabbit_reciever
+from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver
 
 urlpatterns = [
     url(r'^', include('EmergencyCommon.urls')),
@@ -27,4 +27,4 @@ urlpatterns = [
 ] + static.static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 #Hack... we start the rabbitmq consumer from here..
-rabbit_reciever.start_consuming()
+rabbit_receiver.start_consuming()
