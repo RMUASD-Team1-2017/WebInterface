@@ -16,15 +16,18 @@ Including another URLconf
 from django.conf.urls import url, include, static
 from django.contrib import admin
 from django.conf import settings
-from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver
+from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver, rabbitCallbacks
 
 urlpatterns = [
     url(r'^', include('EmergencyCommon.urls')),
     url(r'^EmergencyUser/', include('EmergencyUser.urls')),
     url(r'^EmergencyControl/', include('EmergencyControl.urls')),
-    url(r'^$', lambda r: HttpResponseRedirect('EmergencyCommon/'))
+    url(r'^$', lambda r: HttpResponseRedirect('EmergencyCommon/')),
+    url(r'^admin/', admin.site.urls),
 
 ] + static.static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 #Hack... we start the rabbitmq consumer from here..
+
+rabbitCallbacks.register_callbacks()
 rabbit_receiver.start_consuming()

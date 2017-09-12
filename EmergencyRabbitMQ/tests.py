@@ -1,10 +1,12 @@
 from django.test import TestCase, Client, SimpleTestCase
 from django.urls import reverse
 from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver, RabbitMQReceiver_
+from EmergencyCommon.models import Drone, DronePosition
 import random
 import time
 import threading
 import traceback
+import json
 class RabbitMQTests(TestCase):
 #Simple test to see if we can retrieve the webpages
     recieved = {}
@@ -130,3 +132,36 @@ class RabbitMQTests(TestCase):
             except KeyError:
                 continue
         raise KeyError("Did not receive messages from broker as expected")
+
+
+class RabbitMQTests(TestCase):
+
+    def test_update_drone_location(self):
+        print("Testing update_drone_location")
+        ids = ['3' , '5', '7']
+        data =  {   'current_time' : "2017/05/27_23:11:29",
+                    'position' : {'latitude' : 21.315325214, 'longtitude' : 22.325252414321},
+                    'destination' : { 'goal' : {'latitude' : 25.315325214, 'longtitude' : 20.325252414321}, 'waypoint' : {'latitude' : 51.315325214, 'longtitude' : -22.325252414321}},
+                    'ETA' : 127,
+                    'state' : 'flying'
+                }
+        data_str = json.dumps(data)
+        loops = 3
+        for id_ in ids:
+            for i in range(loops):
+                rabbit_sender.get_channel().basic_publish(exchange='drone',
+                              routing_key="drone." + str(id_) + ".status",
+                              body=data_str)
+        for i in range(30):
+            try:
+                time.sleep(0.2)
+                if(Drone.objects.all().count() < len(ids)): continue
+                self.assertEqual(Drone.objects.all().count(), len(ids))
+
+                if(DronePosition.objects.all().count() < len(ids) * loops): continue
+                self.assertEqual(DronePosition.objects.all().count(), len(ids) * loops)
+
+                return
+            except KeyError:
+                continue
+        raise KeyError("Something went wrong when creating drone objects.")
