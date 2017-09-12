@@ -14,5 +14,5 @@ class PageRetrieveTests(TestCase):
     def test_dispatch_page(self):
         self.assertEqual(test_retrieve("drone_dispatch"), 200)
 
-    def test_send_page(self):
-        self.assertEqual(test_retrieve("destination_send", {"lat" :50.1342152, "lon" : 13.5245252}), 200)
+    #def test_send_page(self):
+    #    self.assertEqual(test_retrieve("destination_send", {"lat" :50.1342152, "lon" : 13.5245252}), 200)

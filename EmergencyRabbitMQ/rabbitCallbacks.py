@@ -8,26 +8,43 @@ from django.utils.timezone import make_aware
 def update_drone_location_callback(ch, method, properties, body):
     _id = method.routing_key.split('.')[1]
     data = json.loads(body.decode('utf-8'))
+    last_update = make_aware(datetime.datetime.strptime(data['current_time'], '%Y/%m/%d_%H:%M:%S'))
+    eta = None
+    if data['ETA']: eta = last_update + datetime.timedelta(seconds = data['ETA'])
+
     #Test if the drone exists, if not, create it.
     try:
         drone = Drone.objects.filter(serial=_id)[0]
-    except:
+    except IndexError:
         drone = Drone(serial = _id)
+    drone.save()
+    #Test if mission exists, if not, create if
+    mission = None
+    mission_id = data['state']['mission_id']
+    if data['state']['mission_id']:
+        try:
+            mission = DroneMission.objects.filter(id = mission_id)[0]
+        except IndexError:
+            mission = DroneMission(the_drone = drone, id = mission_id )
+            if mission.accepted is False:
+                mission.start = last_update
+                mission.accepted = True
+        mission.goal_latitude = float(data['destination']['goal']['latitude'])
+        mission.goal_longtitude = float(data['destination']['goal']['longtitude'])
+        mission.waypoint_latitude = float(data['destination']['waypoint']['latitude'])
+        mission.waypoint_longtitude = float(data['destination']['waypoint']['longtitude'])
+        mission.eta = eta
+        mission.last_update = last_update
+        mission.save()
     #Add drone state to db
     try:
-        last_update = make_aware(datetime.datetime.strptime(data['current_time'], '%Y/%m/%d_%H:%M:%S'))
-        eta = last_update + datetime.timedelta(seconds = data['ETA'])
         drone.latitude = float(data['position']['latitude'])
         drone.longtitude = float(data['position']['longtitude'])
-        drone.goal_latitude = float(data['destination']['goal']['latitude'])
-        drone.goal_longtitude = float(data['destination']['goal']['longtitude'])
-        drone.waypoint_latitude = float(data['destination']['waypoint']['latitude'])
-        drone.waypoint_longtitude = float(data['destination']['waypoint']['longtitude'])
         drone.last_update = last_update
-        drone.eta = eta
-        drone.state = data['state']
+        drone.state = data['state']['mission_state']
         drone.save()
-        position = DronePosition(   drone = drone,
+        drone.current_mission = mission
+        position = DronePosition(   the_drone = drone,
                                     latitude = float(data['position']['latitude']),
                                     longtitude = float(data['position']['longtitude']),
                                     time = last_update

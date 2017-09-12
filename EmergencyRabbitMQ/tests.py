@@ -7,6 +7,7 @@ import time
 import threading
 import traceback
 import json
+
 class RabbitMQTests(TestCase):
 #Simple test to see if we can retrieve the webpages
     recieved = {}
@@ -50,7 +51,7 @@ class RabbitMQTests(TestCase):
 
     def test_fanout(self):
         print("Testing RabbitMQ fanout")
-        reciever_count = 5
+        reciever_count = 2
         recievers = [RabbitMQReceiver_() for x in range(reciever_count)]
         exchange = str(random.randint(1, 10**20))
         message = str(random.randint(1, 10**20))
@@ -85,11 +86,11 @@ class RabbitMQTests(TestCase):
     def test_topics(self):
         print("Testing RabbitMQ topics")
 
-        reciever_count = 5
+        reciever_count = 2
         topics = ["info.good", "info.bad", "info.#", "warning.good", "warning.bad", "warning.#", "error.good", "error.bad", "error.#"]
         recievers = [(RabbitMQReceiver_(), topics[x])  for x in range(len(topics))]
 
-        exchange = 'topic_logs' #str(random.randint(1, 10**20))
+        exchange = str(random.randint(1, 10**20))
         message = str(random.randint(1, 10**20))
 
         rabbit_sender.get_channel().exchange_declare(exchange=exchange,
@@ -104,7 +105,7 @@ class RabbitMQTests(TestCase):
                                   queue=queue)
             receiver.start_consuming()
 
-        time.sleep(1)
+        time.sleep(0.1)
         for key in ["info.bad", "info.good", "warning.bad", "error.bad", "error.good"]:
             rabbit_sender.get_channel().basic_publish(exchange=exchange,
                           routing_key=key,
@@ -134,8 +135,7 @@ class RabbitMQTests(TestCase):
         raise KeyError("Did not receive messages from broker as expected")
 
 
-class RabbitMQTests(TestCase):
-
+class ConsumerTests(TestCase):
     def test_update_drone_location(self):
         print("Testing update_drone_location")
         ids = ['3' , '5', '7']
@@ -143,11 +143,12 @@ class RabbitMQTests(TestCase):
                     'position' : {'latitude' : 21.315325214, 'longtitude' : 22.325252414321},
                     'destination' : { 'goal' : {'latitude' : 25.315325214, 'longtitude' : 20.325252414321}, 'waypoint' : {'latitude' : 51.315325214, 'longtitude' : -22.325252414321}},
                     'ETA' : 127,
-                    'state' : 'flying'
+                    'state' : {'mission_state' : 'flying', 'mission_id' : None }
                 }
-        data_str = json.dumps(data)
         loops = 3
         for id_ in ids:
+            data['state']['mission_id'] = random.randint(1, 10 ** 10)
+            data_str = json.dumps(data)
             for i in range(loops):
                 rabbit_sender.get_channel().basic_publish(exchange='drone',
                               routing_key="drone." + str(id_) + ".status",
