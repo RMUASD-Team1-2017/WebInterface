@@ -1,7 +1,7 @@
 #!/bin/bash
 #start rabbitmq
 rabbitmq-server &
-sleep 3
+sleep 10
 if [ "$1" == "run" ]; then
   ./run.sh
 elif [ "$1" == "test" ]; then
