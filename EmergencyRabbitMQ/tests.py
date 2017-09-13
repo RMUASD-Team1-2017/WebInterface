@@ -1,7 +1,7 @@
 from django.test import TestCase, Client, SimpleTestCase
 from django.urls import reverse
 from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver, RabbitMQReceiver_
-from EmergencyCommon.models import Drone, DronePosition
+from EmergencyCommon.models import Drone, DronePosition, DroneMission
 import random
 import time
 import threading
@@ -149,6 +149,11 @@ class ConsumerTests(TestCase):
         for id_ in ids:
             data['state']['mission_id'] = random.randint(1, 10 ** 10)
             data_str = json.dumps(data)
+            # try:
+            #     mis = DroneMission.objects.filter(id=data['state']['mission_id'])[0]
+            # except:
+            #     mis = DroneMission(id = data['state']['mission_id'])
+            #     mis.save()
             for i in range(loops):
                 rabbit_sender.get_channel().basic_publish(exchange='drone',
                               routing_key="drone." + str(id_) + ".status",

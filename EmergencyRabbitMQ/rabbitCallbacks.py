@@ -24,18 +24,17 @@ def update_drone_location_callback(ch, method, properties, body):
     if data['state']['mission_id']:
         try:
             mission = DroneMission.objects.filter(id = mission_id)[0]
+            mission.the_drone = drone
+            mission.goal_latitude = float(data['destination']['goal']['latitude'])
+            mission.goal_longtitude = float(data['destination']['goal']['longtitude'])
+            mission.waypoint_latitude = float(data['destination']['waypoint']['latitude'])
+            mission.waypoint_longtitude = float(data['destination']['waypoint']['longtitude'])
+            mission.eta = eta
+            mission.last_update = last_update
+            mission.save()
         except IndexError:
-            mission = DroneMission(the_drone = drone, id = mission_id )
-            if mission.accepted is False:
-                mission.start = last_update
-                mission.accepted = True
-        mission.goal_latitude = float(data['destination']['goal']['latitude'])
-        mission.goal_longtitude = float(data['destination']['goal']['longtitude'])
-        mission.waypoint_latitude = float(data['destination']['waypoint']['latitude'])
-        mission.waypoint_longtitude = float(data['destination']['waypoint']['longtitude'])
-        mission.eta = eta
-        mission.last_update = last_update
-        mission.save()
+            print("Recieved message about mission {}, which does not seem to exist!".format(mission_id))
+
     #Add drone state to db
     try:
         drone.latitude = float(data['position']['latitude'])

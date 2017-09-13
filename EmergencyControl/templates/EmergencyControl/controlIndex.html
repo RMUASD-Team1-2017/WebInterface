@@ -7,9 +7,197 @@
 <div class="container">
   <div class="row">
     <div class="col-lg-12 text-center">
-      <h1 class="mt-5">UAS Emergency Control</h1>
+      <h1 class="mt-5">Missions</h1>
       <p class="lead">Here you can control the UAS Emergency system</p>
+      <h2 class="mt-5">Pending</h2>
+        <table class="table table-hover" id="pending_table">
+          <thead>
+            <tr class="bg-primary">
+              <th>Mission ID</th>
+              <th>Destination</th>
+              <th>State</th>
+              <th>Accept</th>
+              <th>Deny</th>
+            </tr>
+          </thead>
+          <tbody id="pending_table_body">
+          </tbody>
+        </table>
+        <h2 class="mt-5">Accepted</h2>
+        <table class="table table-hover" id="accepted_table">
+          <thead>
+            <tr class="bg-success">
+              <th>Mission ID</th>
+              <th>Destination</th>
+              <th>State</th>
+            </tr>
+          </thead>
+          <tbody id="accepted_table_body">
+          </tbody>
+        </table>
+        <h2 class="mt-5">Denied</h2>
+        <table class="table table-hover" id="denied_table">
+          <thead>
+            <tr class="bg-danger">
+              <th>Mission ID</th>
+              <th>Destination</th>
+              <th>State</th>
+            </tr>
+          </thead>
+          <tbody id="denied_table_body">
+          </tbody>
+        </table>
+
     </div>
   </div>
 </div>
 {% endblock %}
+
+{% block javascript %}
+
+{{block.super}}
+<script language="javascript" type="text/javascript">
+$(function () {
+    $.ajaxSetup({
+        headers: { "X-CSRFToken": getCookie("csrftoken") }
+    });
+});
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+  function update_mission(mission, decision)
+  {
+    console.log(mission, decision);
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify({"mission" : mission, "decision" : decision}),
+        success: function() {
+          console.log("submitted");
+            //var t = new Toast();
+            //t.snackShow('Device is rebooting', 'info');
+        }
+    });
+  };
+
+  function insert_mission_row(mission, missions, table_body, show_buttons, row_class)
+  {
+    var row = table_body.insertRow(0);
+    row.className = row_class
+    var cell1 = row.insertCell(0);
+    cell1.innerHTML = mission.toString();
+    var cell2 = row.insertCell(1);
+    cell2.innerHTML = "Lat: " + missions[mission].call_position.latitude.toString() + "<br> Lon: " + missions[mission].call_position.longtitude.toString();
+    var cell3 = row.insertCell(2);
+    cell3.innerHTML = missions[mission].state;
+    if(show_buttons)
+    {
+      var s = document.createElement("button"); //input element, Submit button
+      s.className = "btn btn-success"
+      s.setAttribute('type',"button");
+      s.setAttribute('value',"accept_" + mission.toString());
+      s.setAttribute('onclick', "update_mission(" + mission.toString() + ", 'accept');");
+      s.innerHTML = "Accept";
+      var cell4 = row.insertCell(3);
+      cell4.appendChild(s);
+
+      var s = document.createElement("button"); //input element, Submit button
+      s.className = "btn btn-danger"
+      s.setAttribute('type',"button");
+      s.setAttribute('value',"deny_" + mission.toString());
+      s.setAttribute('onclick', "update_mission(" + mission.toString() + ", 'deny');");
+      s.innerHTML = "Deny";
+      var cell5 = row.insertCell(4);
+      cell5.appendChild(s);    }
+    for(i = 0; i < table_body.rows.length; i += 1)
+    {
+      table_body.rows[i].style.textAlign = "left";
+    }
+
+  };
+  (function worker() {
+  $.ajax({
+    url: '{% url "EmergencyControl:mission_queue_json" accepted="None"%}',
+    method: 'GET',
+    dataType: 'json',
+    data: {},
+    success: function(json) {
+      var old_body = document.getElementById("pending_table_body");
+      var new_body = document.createElement('tbody');
+      new_body.id = "pending_table_body";
+      for(mission in json)
+      {
+        insert_mission_row(mission, json, new_body, true, "table-info");
+      }
+      old_body.parentNode.replaceChild(new_body, old_body);
+    },
+    complete: function() {
+      // Schedule the next request when the current one's complete
+      setTimeout(worker, 1000);
+    }
+   });
+   })();
+
+   (function worker() {
+   $.ajax({
+     url: '{% url "EmergencyControl:mission_queue_json" accepted="True"%}',
+     method: 'GET',
+     dataType: 'json',
+     data: {},
+     success: function(json) {
+       var old_body = document.getElementById("accepted_table_body");
+       var new_body = document.createElement('tbody');
+       new_body.id = "accepted_table_body";
+       for(mission in json)
+       {
+         insert_mission_row(mission, json, new_body, false, "table-success");
+       }
+       old_body.parentNode.replaceChild(new_body, old_body);
+     },
+     complete: function() {
+       // Schedule the next request when the current one's complete
+       setTimeout(worker, 1000);
+     }
+    });
+    })();
+
+    (function worker() {
+    $.ajax({
+      url: '{% url "EmergencyControl:mission_queue_json" accepted="False"%}',
+      method: 'GET',
+      dataType: 'json',
+      data: {},
+      success: function(json) {
+        var old_body = document.getElementById("denied_table_body");
+        var new_body = document.createElement('tbody');
+        new_body.id = "denied_table_body";
+        for(mission in json)
+        {
+          insert_mission_row(mission, json, new_body, false, "table-danger");
+        }
+        old_body.parentNode.replaceChild(new_body, old_body);
+      },
+      complete: function() {
+        // Schedule the next request when the current one's complete
+        setTimeout(worker, 1000);
+      }
+     });
+     })();
+
+ </script>
+
+
+ {% endblock %}

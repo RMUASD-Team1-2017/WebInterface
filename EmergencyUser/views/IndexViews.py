@@ -28,7 +28,7 @@ class DroneDispatch(View):
             #Create new mission for this request
             mission = DroneMission(call_longtitude = float(lon), call_latitude = float(lat))
             mission.save()
-            rabbitSenders.send_mission_request(mission = mission)
+            #rabbitSenders.send_mission_request(mission = mission)
 
         return HttpResponseRedirect(reverse('EmergencyUser:destination_send', kwargs = {'pk' : mission.id}))
 
@@ -44,13 +44,14 @@ class MissionStatusJSON(View):
         response = {}
         response['last_update'] = mission.last_update
         response['accepted'] = mission.accepted
-        response['last_update'] = mission.last_update
         response['goal'] = {'latitude' : mission.goal_latitude, 'longtitude' : mission.goal_longtitude}
         response['position'] = {'latitude' : None, 'longtitude' : None}
         response['eta'] = mission.eta
+        response['takeoff_done'] = False
         if mission.the_drone:
             response['position']['latitude'] = mission.the_drone.latitude
             response['position']['longtitude'] = mission.the_drone.longtitude
+            response['takeoff_done'] = True
         return JsonResponse(response)
 
 class MissionStatusView(View):
