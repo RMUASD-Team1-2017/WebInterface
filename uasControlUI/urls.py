@@ -29,5 +29,5 @@ urlpatterns = [
 
 #Hack... we start the rabbitmq consumer from here..
 
-rabbitCallbacks.register_callbacks()
-rabbit_receiver.start_consuming()
+rabbit_receiver.run()
+rabbit_sender.run()

@@ -1,11 +1,12 @@
-from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver
 import json
-from EmergencyCommon.models import *
 import datetime
 import traceback
 #define callbacks
 from django.utils.timezone import make_aware
+
 def update_drone_location_callback(ch, method, properties, body):
+    from EmergencyCommon.models import Drone, DroneMission, DronePosition
+
     _id = method.routing_key.split('.')[1]
     data = json.loads(body.decode('utf-8'))
     last_update = make_aware(datetime.datetime.strptime(data['current_time'], '%Y/%m/%d_%H:%M:%S'))
@@ -54,19 +55,3 @@ def update_drone_location_callback(ch, method, properties, body):
         traceback.print_exc()
     #Always ACK for now?
     ch.basic_ack(delivery_tag = method.delivery_tag)
-
-
-def register_callbacks():
-    ##Setup queues, exchanges and callbacks
-    exchange = 'drone'
-    rabbit_receiver.get_channel().exchange_declare(exchange=exchange,
-                                                type='topic')
-
-    queue = rabbit_receiver.get_channel().queue_declare(exclusive = True).method.queue
-
-    rabbit_receiver.get_channel().queue_bind(exchange=exchange,
-                                      queue=queue,
-                                      routing_key = "drone.*.status")
-
-    rabbit_receiver.get_channel().basic_consume(update_drone_location_callback,
-                                        queue=queue)

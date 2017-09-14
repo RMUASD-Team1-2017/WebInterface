@@ -4,12 +4,14 @@
 {% block head_title %}UAS Emergency Control{% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="container">
   <div class="row">
     <div class="col-lg-12 text-center">
       <h1 class="mt-5">Missions</h1>
       <p class="lead">Here you can control the UAS Emergency system</p>
       <h2 class="mt-5">Pending</h2>
+      <div class="table-responsive">
         <table class="table table-hover" id="pending_table">
           <thead>
             <tr class="bg-primary">
@@ -23,7 +25,9 @@
           <tbody id="pending_table_body">
           </tbody>
         </table>
+      </div>
         <h2 class="mt-5">Accepted</h2>
+        <div class="table-responsive">
         <table class="table table-hover" id="accepted_table">
           <thead>
             <tr class="bg-success">
@@ -35,7 +39,9 @@
           <tbody id="accepted_table_body">
           </tbody>
         </table>
+      </div>
         <h2 class="mt-5">Denied</h2>
+        <div class="table-responsive">
         <table class="table table-hover" id="denied_table">
           <thead>
             <tr class="bg-danger">
@@ -47,6 +53,7 @@
           <tbody id="denied_table_body">
           </tbody>
         </table>
+      </div>
 
     </div>
   </div>
