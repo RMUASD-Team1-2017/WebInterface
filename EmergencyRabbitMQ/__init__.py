@@ -21,7 +21,7 @@ class RabbitMQReceiver_(object):
         self._consumer_tag = None
         self._url = settings.RABBIT_BROKER
         self.exchange = 'drone'
-        self.routing_key = 'drone.*.status'
+        self.routing_key = 'drone.status'
         self.thread = None
         self.publish_interval = 0.05
         self.exchanges = []

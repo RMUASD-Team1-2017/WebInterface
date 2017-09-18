@@ -7,8 +7,8 @@ from django.utils.timezone import make_aware
 def update_drone_location_callback(ch, method, properties, body):
     from EmergencyCommon.models import Drone, DroneMission, DronePosition
 
-    _id = method.routing_key.split('.')[1]
     data = json.loads(body.decode('utf-8'))
+    print(body)
     last_update = make_aware(datetime.datetime.strptime(data['current_time'], '%Y/%m/%d_%H:%M:%S'))
     eta = None
     if data['ETA']: eta = last_update + datetime.timedelta(seconds = data['ETA'])
@@ -21,8 +21,8 @@ def update_drone_location_callback(ch, method, properties, body):
     drone.save()
     #Test if mission exists, if not, create if
     mission = None
-    mission_id = data['state']['mission_id']
-    if data['state']['mission_id']:
+    mission_id = data["mission_id"]
+    if mission_id:
         try:
             mission = DroneMission.objects.filter(id = mission_id)[0]
             mission.the_drone = drone
