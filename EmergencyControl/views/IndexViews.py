@@ -51,16 +51,16 @@ class MissionListJSON(View):
             response[mission.id] = {}
             response[mission.id]['last_update'] = mission.last_update
             response[mission.id]['accepted'] = mission.accepted
-            response[mission.id]['goal'] = {'latitude' : mission.goal_latitude, 'longtitude' : mission.goal_longtitude}
-            response[mission.id]['waypoint'] = {'latitude' : mission.waypoint_latitude, 'longtitude' : mission.waypoint_longtitude}
-            response[mission.id]['call_position'] = {'latitude' : mission.call_latitude, 'longtitude' : mission.call_longtitude}
-            response[mission.id]['position'] = {'latitude' : None, 'longtitude' : None}
+            response[mission.id]['goal'] = {'latitude' : mission.goal_latitude, 'longitude' : mission.goal_longitude}
+            response[mission.id]['waypoint'] = {'latitude' : mission.waypoint_latitude, 'longitude' : mission.waypoint_longitude}
+            response[mission.id]['call_position'] = {'latitude' : mission.call_latitude, 'longitude' : mission.call_longitude}
+            response[mission.id]['position'] = {'latitude' : None, 'longitude' : None}
             response[mission.id]['eta'] = mission.eta
             response[mission.id]['takeoff_done'] = False
             response[mission.id]['state'] = None
             if mission.the_drone:
                 response[mission.id]['position']['latitude'] = mission.the_drone.latitude
-                response[mission.id]['position']['longtitude'] = mission.the_drone.longtitude
+                response[mission.id]['position']['longitude'] = mission.the_drone.longitude
                 response[mission.id]['takeoff_done'] = True
                 response[mission.id]['state'] = mission.the_drone.state
 

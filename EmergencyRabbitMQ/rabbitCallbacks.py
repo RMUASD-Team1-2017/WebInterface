@@ -27,9 +27,9 @@ def update_drone_location_callback(ch, method, properties, body):
             mission = DroneMission.objects.filter(id = mission_id)[0]
             mission.the_drone = drone
             mission.goal_latitude = float(data['destination']['goal']['latitude'])
-            mission.goal_longtitude = float(data['destination']['goal']['longtitude'])
+            mission.goal_longitude = float(data['destination']['goal']['longitude'])
             mission.waypoint_latitude = float(data['destination']['waypoint']['latitude'])
-            mission.waypoint_longtitude = float(data['destination']['waypoint']['longtitude'])
+            mission.waypoint_longitude = float(data['destination']['waypoint']['longitude'])
             mission.eta = eta
             mission.last_update = last_update
             mission.save()
@@ -39,14 +39,14 @@ def update_drone_location_callback(ch, method, properties, body):
     #Add drone state to db
     try:
         drone.latitude = float(data['position']['latitude'])
-        drone.longtitude = float(data['position']['longtitude'])
+        drone.longitude = float(data['position']['longitude'])
         drone.last_update = last_update
         drone.state = data['state']['mission_state']
         drone.save()
         drone.current_mission = mission
         position = DronePosition(   the_drone = drone,
                                     latitude = float(data['position']['latitude']),
-                                    longtitude = float(data['position']['longtitude']),
+                                    longitude = float(data['position']['longitude']),
                                     time = last_update
                                 )
         position.save()

@@ -26,7 +26,7 @@ class DroneDispatch(View):
         if "destination_submit" in request.POST and destination_picker.is_valid():
             lat, lon = tuple(destination_picker.cleaned_data["destination"])
             #Create new mission for this request
-            mission = DroneMission(call_longtitude = float(lon), call_latitude = float(lat))
+            mission = DroneMission(call_longitude = float(lon), call_latitude = float(lat))
             mission.save()
             #rabbitSenders.send_mission_request(mission = mission)
 
@@ -44,13 +44,13 @@ class MissionStatusJSON(View):
         response = {}
         response['last_update'] = mission.last_update
         response['accepted'] = mission.accepted
-        response['goal'] = {'latitude' : mission.goal_latitude, 'longtitude' : mission.goal_longtitude}
-        response['position'] = {'latitude' : None, 'longtitude' : None}
+        response['goal'] = {'latitude' : mission.goal_latitude, 'longitude' : mission.goal_longitude}
+        response['position'] = {'latitude' : None, 'longitude' : None}
         response['eta'] = mission.eta
         response['takeoff_done'] = False
         if mission.the_drone:
             response['position']['latitude'] = mission.the_drone.latitude
-            response['position']['longtitude'] = mission.the_drone.longtitude
+            response['position']['longitude'] = mission.the_drone.longitude
             response['takeoff_done'] = True
         return JsonResponse(response)
 

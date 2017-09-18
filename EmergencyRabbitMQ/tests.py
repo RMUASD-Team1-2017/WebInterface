@@ -14,8 +14,8 @@ class ConsumerTests(TestCase):
         print("Testing update_drone_location")
         ids = ['3' , '5', '7']
         data =  {   'current_time' : "2017/05/27_23:11:29",
-                    'position' : {'latitude' : 21.315325214, 'longtitude' : 22.325252414321},
-                    'destination' : { 'goal' : {'latitude' : 25.315325214, 'longtitude' : 20.325252414321}, 'waypoint' : {'latitude' : 51.315325214, 'longtitude' : -22.325252414321}},
+                    'position' : {'latitude' : 21.315325214, 'longitude' : 22.325252414321},
+                    'destination' : { 'goal' : {'latitude' : 25.315325214, 'longitude' : 20.325252414321}, 'waypoint' : {'latitude' : 51.315325214, 'longitude' : -22.325252414321}},
                     'ETA' : 127,
                     'state' : {'mission_state' : 'flying', 'mission_id' : None }
                 }
