@@ -8,16 +8,15 @@ def update_drone_location_callback(ch, method, properties, body):
     from EmergencyCommon.models import Drone, DroneMission, DronePosition
 
     data = json.loads(body.decode('utf-8'))
-    print(body)
     last_update = make_aware(datetime.datetime.strptime(data['current_time'], '%Y/%m/%d_%H:%M:%S'))
     eta = None
     if data['ETA']: eta = last_update + datetime.timedelta(seconds = data['ETA'])
 
     #Test if the drone exists, if not, create it.
     try:
-        drone = Drone.objects.filter(serial=_id)[0]
+        drone = Drone.objects.filter(serial=data["serial"])[0]
     except IndexError:
-        drone = Drone(serial = _id)
+        drone = Drone(serial=data["serial"])
     drone.save()
     #Test if mission exists, if not, create if
     mission = None

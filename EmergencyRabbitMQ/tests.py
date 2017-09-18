@@ -17,11 +17,14 @@ class ConsumerTests(TestCase):
                     'position' : {'latitude' : 21.315325214, 'longitude' : 22.325252414321},
                     'destination' : { 'goal' : {'latitude' : 25.315325214, 'longitude' : 20.325252414321}, 'waypoint' : {'latitude' : 51.315325214, 'longitude' : -22.325252414321}},
                     'ETA' : 127,
-                    'state' : {'mission_state' : 'flying', 'mission_id' : None }
+                    'state' : {'mission_state' : 'flying'},
+                    'mission_id' : 1,
+                    'serial' : 1
                 }
         loops = 3
         for id_ in ids:
-            data['state']['mission_id'] = random.randint(1, 10 ** 10)
+            data['mission_id'] = random.randint(1, 10 ** 10)
+            data['serial'] = random.randint(1, 10 ** 10)
             data_str = json.dumps(data)
             # try:
             #     mis = DroneMission.objects.filter(id=data['state']['mission_id'])[0]
@@ -30,7 +33,7 @@ class ConsumerTests(TestCase):
             #     mis.save()
             for i in range(loops):
                 rabbit_sender.add_message(exchange='drone',
-                              routing_key="drone." + str(id_) + ".status",
+                              routing_key="drone.status",
                               body=data_str)
         for i in range(30):
             try:
