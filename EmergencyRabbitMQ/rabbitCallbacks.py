@@ -6,11 +6,10 @@ from django.utils.timezone import make_aware
 
 def update_drone_location_callback(ch, method, properties, body):
     from EmergencyCommon.models import Drone, DroneMission, DronePosition
-
     data = json.loads(body.decode('utf-8'))
     last_update = make_aware(datetime.datetime.strptime(data['current_time'], '%Y/%m/%d_%H:%M:%S'))
     eta = None
-    if data['ETA']: eta = last_update + datetime.timedelta(seconds = data['ETA'])
+    if data['eta']: eta = last_update + datetime.timedelta(seconds = data['eta'])
 
     #Test if the drone exists, if not, create it.
     try:
@@ -25,10 +24,10 @@ def update_drone_location_callback(ch, method, properties, body):
         try:
             mission = DroneMission.objects.filter(id = mission_id)[0]
             mission.the_drone = drone
-            mission.goal_latitude = float(data['destination']['goal']['latitude'])
-            mission.goal_longitude = float(data['destination']['goal']['longitude'])
-            mission.waypoint_latitude = float(data['destination']['waypoint']['latitude'])
-            mission.waypoint_longitude = float(data['destination']['waypoint']['longitude'])
+            mission.goal_latitude = float(data['destination']['latitude'])
+            mission.goal_longitude = float(data['destination']['longitude'])
+            mission.waypoint_latitude = float(data['waypoint']['latitude'])
+            mission.waypoint_longitude = float(data['waypoint']['longitude'])
             mission.eta = eta
             mission.last_update = last_update
             mission.save()
@@ -40,7 +39,7 @@ def update_drone_location_callback(ch, method, properties, body):
         drone.latitude = float(data['position']['latitude'])
         drone.longitude = float(data['position']['longitude'])
         drone.last_update = last_update
-        drone.state = data['state']['mission_state']
+        drone.state = data['state']
         drone.save()
         drone.current_mission = mission
         position = DronePosition(   the_drone = drone,

@@ -15,9 +15,10 @@ class ConsumerTests(TestCase):
         ids = ['3' , '5', '7']
         data =  {   'current_time' : "2017/05/27_23:11:29",
                     'position' : {'latitude' : 21.315325214, 'longitude' : 22.325252414321},
-                    'destination' : { 'goal' : {'latitude' : 25.315325214, 'longitude' : 20.325252414321}, 'waypoint' : {'latitude' : 51.315325214, 'longitude' : -22.325252414321}},
-                    'ETA' : 127,
-                    'state' : {'mission_state' : 'flying'},
+                    'destination' :  {'latitude' : 25.315325214, 'longitude' : 20.325252414321},
+                    'waypoint' : {'latitude' : 51.315325214, 'longitude' : -22.325252414321},
+                    'eta' : 127,
+                    'state' :  'flying',
                     'mission_id' : 1,
                     'serial' : 1
                 }

@@ -34,6 +34,8 @@
               <th>Mission ID</th>
               <th>Destination</th>
               <th>State</th>
+              <th>Position</th>
+
             </tr>
           </thead>
           <tbody id="accepted_table_body">
@@ -48,6 +50,7 @@
               <th>Mission ID</th>
               <th>Destination</th>
               <th>State</th>
+              <th>Position</th>
             </tr>
           </thead>
           <tbody id="denied_table_body">
@@ -100,7 +103,7 @@ function getCookie(name) {
     });
   };
 
-  function insert_mission_row(mission, missions, table_body, show_buttons, row_class)
+  function insert_mission_row(mission, missions, table_body, show_buttons, show_position, row_class)
   {
     var row = table_body.insertRow(0);
     row.className = row_class
@@ -128,7 +131,18 @@ function getCookie(name) {
       s.setAttribute('onclick', "update_mission(" + mission.toString() + ", 'deny');");
       s.innerHTML = "Deny";
       var cell5 = row.insertCell(4);
-      cell5.appendChild(s);    }
+      cell5.appendChild(s);
+    }
+    else if(show_position)
+    {
+      var cell4 = row.insertCell(3);
+      var lat = missions[mission].position.latitude;
+      var lon = missions[mission].position.longitude;
+      if(lat == null) lat = "NaN";
+      if(lon == null) lon = "NaN";
+
+      cell4.innerHTML = "Lat: " + lat.toString() + "<br> Lon: " + lon.toString();
+    }
     for(i = 0; i < table_body.rows.length; i += 1)
     {
       table_body.rows[i].style.textAlign = "left";
@@ -147,7 +161,7 @@ function getCookie(name) {
       new_body.id = "pending_table_body";
       for(mission in json)
       {
-        insert_mission_row(mission, json, new_body, true, "table-info");
+        insert_mission_row(mission, json, new_body, true, false,  "table-info");
       }
       old_body.parentNode.replaceChild(new_body, old_body);
     },
@@ -170,7 +184,7 @@ function getCookie(name) {
        new_body.id = "accepted_table_body";
        for(mission in json)
        {
-         insert_mission_row(mission, json, new_body, false, "table-success");
+         insert_mission_row(mission, json, new_body, false, true, "table-success");
        }
        old_body.parentNode.replaceChild(new_body, old_body);
      },
@@ -193,7 +207,7 @@ function getCookie(name) {
         new_body.id = "denied_table_body";
         for(mission in json)
         {
-          insert_mission_row(mission, json, new_body, false, "table-danger");
+          insert_mission_row(mission, json, new_body, false, true, "table-danger");
         }
         old_body.parentNode.replaceChild(new_body, old_body);
       },
