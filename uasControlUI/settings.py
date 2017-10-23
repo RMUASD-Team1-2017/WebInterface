@@ -131,4 +131,4 @@ STATICFILES_DIRS = [
 GEOPOSITION_GOOGLE_MAPS_API_KEY = 'AIzaSyB3c89eCgSN3QDLJDnXtii9815q0v8nZFk'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-RABBIT_BROKER = "amqp://guest:guest@localhost:5672/%2F?connection_attempts=3&heartbeat_interval=3600"
+RABBIT_BROKER = "amqp://{}:{}@{}:5672/%2F?connection_attempts=3&heartbeat_interval=3600".format(os.environ["rmq_user"], os.environ["rmq_pass"], os.environ["rmq_host"])
