@@ -131,4 +131,7 @@ STATICFILES_DIRS = [
 GEOPOSITION_GOOGLE_MAPS_API_KEY = 'AIzaSyB3c89eCgSN3QDLJDnXtii9815q0v8nZFk'
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-RABBIT_BROKER = "amqp://{}:{}@{}:5672/%2F?connection_attempts=3&heartbeat_interval=3600".format(os.environ["rmq_user"], os.environ["rmq_pass"], os.environ["rmq_host"])
+rmq_user = os.environ.get("rmq_user", "drone")
+rmq_pass = os.environ.get("rmq_pass", "drone")
+rmq_host = os.environ.get("rmq_host", "drone.stefanrvo.dk")
+RABBIT_BROKER = "amqp://{}:{}@{}:5672/%2F?connection_attempts=3&heartbeat_interval=3600".format(rmq_user, rmq_pass, rmq_host)

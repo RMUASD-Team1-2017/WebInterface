@@ -10,19 +10,16 @@ class Control(View):
         template_name = "EmergencyControl/controlIndex.html"
         return render(request, template_name, {} )
     def post(self, request, *args, **kwargs):
-        if request.is_ajax():
-            try:
-                data = json.loads(request.body)
-            except:
-                return HttpResponse(status=400) #Bad request
-            try:
-                decision = data["decision"]
-                mission = get_object_or_404(DroneMission, pk = int(data["mission"]))
-            except (KeyError, ValueError):
-                return HttpResponse(status=400) #Bad request
-            if not decision in ["accept", "deny"]:
-                return HttpResponse(status=400) #Bad request
-        else:
+        try:
+            data = json.loads(request.body)
+        except:
+            return HttpResponse(status=400) #Bad request
+        try:
+            decision = data["decision"]
+            mission = get_object_or_404(DroneMission, pk = int(data["mission"]))
+        except (KeyError, ValueError):
+            return HttpResponse(status=400) #Bad request
+        if not decision in ["accept", "deny"]:
             return HttpResponse(status=400) #Bad request
 
         #Send request for mission
@@ -54,13 +51,14 @@ class MissionListJSON(View):
             response[mission.id]['goal'] = {'latitude' : mission.goal_latitude, 'longitude' : mission.goal_longitude}
             response[mission.id]['waypoint'] = {'latitude' : mission.waypoint_latitude, 'longitude' : mission.waypoint_longitude}
             response[mission.id]['call_position'] = {'latitude' : mission.call_latitude, 'longitude' : mission.call_longitude}
-            response[mission.id]['position'] = {'latitude' : None, 'longitude' : None}
+            response[mission.id]['position'] = {'latitude' : None, 'longitude' : None, 'altitude' : None}
             response[mission.id]['eta'] = mission.eta
             response[mission.id]['takeoff_done'] = False
             response[mission.id]['state'] = None
             if mission.the_drone:
                 response[mission.id]['position']['latitude'] = mission.the_drone.latitude
                 response[mission.id]['position']['longitude'] = mission.the_drone.longitude
+                response[mission.id]['position']['altitude'] = mission.the_drone.altitude
                 response[mission.id]['takeoff_done'] = True
                 response[mission.id]['state'] = mission.the_drone.state
 

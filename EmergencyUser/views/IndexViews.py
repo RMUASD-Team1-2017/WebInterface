@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import View
 from EmergencyUser.forms import DroneDestinationForm
-from django.http import HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponseRedirect, Http404, JsonResponse, HttpResponseBadRequest
 from django.urls import reverse
 from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver
 from EmergencyCommon.models import Drone, DroneMission
@@ -22,15 +22,16 @@ class DroneDispatch(View):
 
     def post(self, request, *args, **kwargs):
         destination_picker = DroneDestinationForm(request.POST)
-
+        print(request.POST)
         if "destination_submit" in request.POST and destination_picker.is_valid():
             lat, lon = tuple(destination_picker.cleaned_data["destination"])
             #Create new mission for this request
             mission = DroneMission(call_longitude = float(lon), call_latitude = float(lat))
             mission.save()
             #rabbitSenders.send_mission_request(mission = mission)
-
-        return HttpResponseRedirect(reverse('EmergencyUser:destination_send', kwargs = {'pk' : mission.id}))
+            return HttpResponseRedirect(reverse('EmergencyUser:destination_send', kwargs = {'pk' : mission.id}))
+        else:
+            return HttpResponseBadRequest()
 
 class DroneSend(View):
     def get(self, request, *args, **kwargs):

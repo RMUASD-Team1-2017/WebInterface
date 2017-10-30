@@ -38,6 +38,7 @@ def update_drone_location_callback(ch, method, properties, body):
     try:
         drone.latitude = float(data['position']['latitude'])
         drone.longitude = float(data['position']['longitude'])
+        drone.altitude = float(data['position']['altitude'])
         drone.last_update = last_update
         drone.state = data['state']
         drone.save()
@@ -45,6 +46,7 @@ def update_drone_location_callback(ch, method, properties, body):
         position = DronePosition(   the_drone = drone,
                                     latitude = float(data['position']['latitude']),
                                     longitude = float(data['position']['longitude']),
+                                    altitude = float(data['position']['altitude']),
                                     time = last_update
                                 )
         position.save()

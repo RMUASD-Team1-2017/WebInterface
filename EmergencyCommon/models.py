@@ -7,6 +7,7 @@ class Drone(models.Model):
     serial = models.CharField(max_length=30)
     latitude = models.FloatField(null = True)
     longitude = models.FloatField(null = True)
+    altitude = models.FloatField(null = True)
     state = models.CharField(max_length=30, null = True)
     last_update = models.DateTimeField(null = True)
     current_mission = models.ForeignKey('DroneMission', null = True, default = None, blank=True)
@@ -32,4 +33,5 @@ class DronePosition(models.Model):
     the_drone = models.ForeignKey(Drone, on_delete = models.CASCADE)
     latitude = models.FloatField()
     longitude = models.FloatField()
+    altitude = models.FloatField()
     time = models.DateTimeField()
