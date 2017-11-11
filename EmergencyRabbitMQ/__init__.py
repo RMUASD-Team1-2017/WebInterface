@@ -1,14 +1,14 @@
 import pika
 from threading import RLock, Thread
 from django.conf import settings
-from .rabbitCallbacks import update_drone_location_callback
+from .rabbitCallbacks import update_drone_location_callback, oes_location_callback
 from queue import Queue
 def dummy_timeout():
     pass
 
 class RabbitMQReceiver_(object):
 
-    def __init__(self):
+    def __init__(self, exchange, routing_key, recv_callback):
         """Create a new instance of the consumer class, passing in the AMQP
         URL used to connect to RabbitMQ.
 
@@ -20,8 +20,9 @@ class RabbitMQReceiver_(object):
         self._closing = False
         self._consumer_tag = None
         self._url = settings.RABBIT_BROKER
-        self.exchange = 'drone'
-        self.routing_key = 'drone.status'
+        self.exchange = exchange
+        self.routing_key = routing_key
+        self.recv_callback = recv_callback
         self.thread = None
         self.publish_interval = 0.05
         self.exchanges = []
@@ -208,7 +209,7 @@ class RabbitMQReceiver_(object):
 
         """
         self.add_on_cancel_callback()
-        self._consumer_tag = self._channel.basic_consume(update_drone_location_callback,
+        self._consumer_tag = self._channel.basic_consume(self.recv_callback,
                                                          self.queue)
 
     def add_on_cancel_callback(self):
@@ -600,37 +601,20 @@ class RabbitMQSender():
         return RabbitMQSender.instance
 
 
-
-# class RabbitMQReceiver_(RabbitMQSender_):
-#     def __init__(self):
-#         super().__init__()
-#         self.consume_thread = None
-#
-#     def start_consuming(self):
-#         self.consume_thread = Thread(target = self.channel.start_consuming, daemon = True)
-#         self.consume_thread.start()
-#
-#     def stop_consuming(self):
-#         self.connection.add_timeout(0.2, dummy_timeout)
-#         self.channel.stop_consuming()
-#         if self.consume_thread:
-#             self.consume_thread.join()
-#
-#     def __del__(self):
-#         self.stop_consuming()
-
-
 class RabbitMQReceiver():
-    instance = None
+    instances = None
     def __init__(self):
         pass
     @classmethod
-    def get_instance(self):
-        if RabbitMQReceiver.instance is None:
+    def get_instances(self):
+        if RabbitMQReceiver.instances is None:
             pass
-            RabbitMQReceiver.instance = RabbitMQReceiver_()
-        return RabbitMQReceiver.instance
+            RabbitMQReceiver.instances = [ \
+                RabbitMQReceiver_(exchange = 'drone', routing_key = 'drone.status', recv_callback = update_drone_location_callback),
+                RabbitMQReceiver_(exchange = 'dronesensor', routing_key = "drone.onboard_gps.*", recv_callback = oes_location_callback),
+                ]
+            return self.instances
 
 
 rabbit_sender = RabbitMQSender.get_instance()
-rabbit_receiver = RabbitMQReceiver.get_instance()
+rabbit_receiver = RabbitMQReceiver.get_instances()

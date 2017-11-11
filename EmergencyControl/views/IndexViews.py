@@ -52,6 +52,7 @@ class MissionListJSON(View):
             response[mission.id]['waypoint'] = {'latitude' : mission.waypoint_latitude, 'longitude' : mission.waypoint_longitude}
             response[mission.id]['call_position'] = {'latitude' : mission.call_latitude, 'longitude' : mission.call_longitude}
             response[mission.id]['position'] = {'latitude' : None, 'longitude' : None, 'altitude' : None}
+            response[mission.id]['oes_position'] = {'latitude' : None, 'longitude' : None, 'altitude' : None}
             response[mission.id]['eta'] = mission.eta
             response[mission.id]['takeoff_done'] = False
             response[mission.id]['state'] = None
@@ -59,6 +60,10 @@ class MissionListJSON(View):
                 response[mission.id]['position']['latitude'] = mission.the_drone.latitude
                 response[mission.id]['position']['longitude'] = mission.the_drone.longitude
                 response[mission.id]['position']['altitude'] = mission.the_drone.altitude
+                response[mission.id]['oes_position']['latitude'] = mission.the_drone.oes_latitude
+                response[mission.id]['oes_position']['longitude'] = mission.the_drone.oes_longitude
+                response[mission.id]['oes_position']['altitude'] = mission.the_drone.oes_altitude
+
                 response[mission.id]['takeoff_done'] = True
                 response[mission.id]['state'] = mission.the_drone.state
 

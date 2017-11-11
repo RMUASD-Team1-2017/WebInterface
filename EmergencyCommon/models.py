@@ -8,6 +8,10 @@ class Drone(models.Model):
     latitude = models.FloatField(null = True)
     longitude = models.FloatField(null = True)
     altitude = models.FloatField(null = True)
+    #Location reported by OES in case of GCS 
+    oes_latitude = models.FloatField(null = True)
+    oes_longitude = models.FloatField(null = True)
+    oes_altitude = models.FloatField(null = True)
     state = models.CharField(max_length=30, null = True)
     last_update = models.DateTimeField(null = True)
     current_mission = models.ForeignKey('DroneMission', null = True, default = None, blank=True)

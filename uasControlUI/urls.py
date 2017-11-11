@@ -29,5 +29,5 @@ urlpatterns = [
 
 #Hack... we start the rabbitmq consumer from here..
 
-rabbit_receiver.run()
+for x in rabbit_receiver: x.run()
 rabbit_sender.run()
