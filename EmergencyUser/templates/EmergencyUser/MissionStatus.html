@@ -23,16 +23,69 @@
     100% { transform: rotate(360deg); }
 }
 </style>
+<style>
+   #map {
+    height: 400px;
+    width: 100%;
+   }
+</style>
+
 {% endblock %}
 {% block content %}
 <div class="container">
   <div class="row">
     <div class="col-lg-12 text-center">
       <h1 class="mt-5">Mission Status</h1>
-      <p class="lead">The mission was {% if mission.accepted %} accepted
+      <p class="lead">The mission was {% if mission.accepted %}
+      accepted
       {% else %} denied
       {% endif %}</p>
     </div>
+      {% if mission.accepted %}
+      <div id="map"></div>
+      {% endif %}
   </div>
 </div>
+{% endblock %}
+{% block javascript %}
+{{block.super}}
+<script>
+  var map;
+  var drone_position
+  var marker;
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 16,
+      center: drone_position
+    });
+    marker = new google.maps.Marker({
+      position: drone_position,
+      map: map
+    });
+    drone_position_updater();
+  }
+  function drone_position_updater() {
+  $.ajax({
+    url: "{% url "EmergencyUser:mission_status_json" pk=mission.id %}",
+    method: 'GET',
+    dataType: 'json',
+    data: {},
+    success: function(json) {
+      if(json.takeoff_done)
+      {
+        marker.setPosition( new google.maps.LatLng(json.position.latitude, json.position.longitude));
+        map.panTo(new google.maps.LatLng(json.position.latitude, json.position.longitude));
+      }
+    },
+
+    complete: function() {
+      // Schedule the next request when the current one's complete
+      setTimeout(drone_position_updater, 1000);
+    }
+   });
+   }
+</script>
+<script async defer
+src="https://maps.googleapis.com/maps/api/js?key={{ maps_api_key }}&callback=initMap">
+</script>
 {% endblock %}

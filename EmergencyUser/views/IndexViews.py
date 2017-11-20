@@ -6,6 +6,8 @@ from django.urls import reverse
 from EmergencyRabbitMQ import rabbit_sender, rabbit_receiver
 from EmergencyCommon.models import Drone, DroneMission
 from EmergencyRabbitMQ import rabbitSenders
+from django.conf import settings
+
 def callback1(ch, method, properties, body):
     print(" [1] Received %r" % body)
 
@@ -47,11 +49,17 @@ class MissionStatusJSON(View):
         response['accepted'] = mission.accepted
         response['goal'] = {'latitude' : mission.goal_latitude, 'longitude' : mission.goal_longitude}
         response['position'] = {'latitude' : None, 'longitude' : None}
+        response['oes_position'] = {'latitude' : None, 'longitude' : None}
+
         response['eta'] = mission.eta
         response['takeoff_done'] = False
         if mission.the_drone:
             response['position']['latitude'] = mission.the_drone.latitude
             response['position']['longitude'] = mission.the_drone.longitude
+            response['position']['altitude'] = mission.the_drone.altitude
+            response['oes_position']['latitude'] = mission.the_drone.oes_latitude
+            response['oes_position']['longitude'] = mission.the_drone.oes_longitude
+            response['oes_position']['altitude'] = mission.the_drone.oes_altitude
             response['takeoff_done'] = True
         return JsonResponse(response)
 
@@ -59,4 +67,4 @@ class MissionStatusView(View):
     def get(self, request, *args, **kwargs):
         mission = get_object_or_404(DroneMission, pk = kwargs['pk'])
         template_name = "EmergencyUser/MissionStatus.html"
-        return render(request, template_name, {'mission' : mission})
+        return render(request, template_name, {'mission' : mission, "maps_api_key" : settings.GEOPOSITION_GOOGLE_MAPS_API_KEY})
