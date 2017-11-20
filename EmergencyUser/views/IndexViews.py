@@ -50,7 +50,6 @@ class MissionStatusJSON(View):
         response['goal'] = {'latitude' : mission.goal_latitude, 'longitude' : mission.goal_longitude}
         response['position'] = {'latitude' : None, 'longitude' : None}
         response['oes_position'] = {'latitude' : None, 'longitude' : None}
-
         response['eta'] = mission.eta
         response['takeoff_done'] = False
         if mission.the_drone:
@@ -61,6 +60,11 @@ class MissionStatusJSON(View):
             response['oes_position']['longitude'] = mission.the_drone.oes_longitude
             response['oes_position']['altitude'] = mission.the_drone.oes_altitude
             response['takeoff_done'] = True
+        response["waypoints"] = []
+        for waypoint in mission.waypoint_set.all().order_by('order'):
+            response["waypoints"].append({"latitude" : waypoint.latitude,
+                                          "longitude" : waypoint.longitude,
+                                          "altitude" : waypoint.altitude,})
         return JsonResponse(response)
 
 class MissionStatusView(View):

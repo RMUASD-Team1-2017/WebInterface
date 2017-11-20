@@ -52,20 +52,42 @@
 <script>
   var map;
   var drone_position
-  var marker;
+  var drone_marker;
+  var path;
+  var goal_position;
+  var goal_marker;
+  var user_position;
+  var user_marker;
   function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
       zoom: 16,
-      center: drone_position
+      center: drone_position,
+      mapTypeId: 'terrain'
     });
-    marker = new google.maps.Marker({
+    drone_marker = new google.maps.Marker({
       position: drone_position,
       map: map,
       icon: "http://maps.google.com/mapfiles/ms/icons/helicopter.png"
     });
+    goal_marker = new google.maps.Marker({
+      position: goal_position,
+      map: map,
+      icon: "http://maps.google.com/mapfiles/ms/icons/flag.png"
+    });
+    user_marker = new google.maps.Marker({
+      position: user_position,
+      map: map,
+      icon: "http://maps.google.com/mapfiles/kml/shapes/man.png"
+    });
+
     drone_position_updater();
   }
   function drone_position_updater() {
+    //Grab user location
+   if (navigator.geolocation) {
+       navigator.geolocation.getCurrentPosition(user_position_callback);
+   }
+   //Request location of drone and other info.
   $.ajax({
     url: "{% url "EmergencyUser:mission_status_json" pk=mission.id %}",
     method: 'GET',
@@ -74,16 +96,40 @@
     success: function(json) {
       if(json.takeoff_done)
       {
-        marker.setPosition( new google.maps.LatLng(json.position.latitude, json.position.longitude));
+        drone_marker.setPosition( new google.maps.LatLng(json.position.latitude, json.position.longitude));
+        goal_marker.setPosition( new google.maps.LatLng(json.goal.latitude, json.goal.longitude));
         map.panTo(new google.maps.LatLng(json.position.latitude, json.position.longitude));
+        path_coordinates = [];
+        for (waypoint in json.waypoints)
+        {
+          path_coordinates.push(new google.maps.LatLng(json.waypoints[waypoint].latitude, json.waypoints[waypoint].longitude));
+        }
+        if (!path && path_coordinates.length)
+        {
+          path = new google.maps.Polyline({
+            path: path_coordinates,
+            geodesic: true,
+            strokeColor: '#FFFF00',
+            strokeOpacity: 1.0,
+            strokeWeight: 2,
+          });
+          path.setMap(map);
+        }
+
+
       }
     },
 
     complete: function() {
       // Schedule the next request when the current one's complete
-      setTimeout(drone_position_updater, 1000);
+      setTimeout(drone_position_updater, 4000);
     }
    });
+   }
+   function user_position_callback(position)
+   {
+     console.log(position.coords);
+     user_marker.setPosition( new google.maps.LatLng(position.coords.latitude, position.coords.longitude));
    }
 </script>
 <script async defer

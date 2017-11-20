@@ -8,11 +8,9 @@ def oes_location_callback(ch, method, properties, body):
     try:
         from EmergencyCommon.models import Drone, DroneMission, DronePosition
         data = json.loads(body.decode('utf-8'))
-        print(data)
         last_update = make_aware(datetime.datetime.strptime(data['time'], '%Y/%m/%d_%H:%M:%S'))
         #Test if the drone exists, if not, create it.
         serial = method.routing_key.split(".")[-1]
-        print(serial)
         try:
             drone = Drone.objects.filter(serial=serial)[0]
         except IndexError:
@@ -27,7 +25,7 @@ def oes_location_callback(ch, method, properties, body):
 
 def update_drone_location_callback(ch, method, properties, body):
     try:
-        from EmergencyCommon.models import Drone, DroneMission, DronePosition
+        from EmergencyCommon.models import Drone, DroneMission, DronePosition, Waypoint
         data = json.loads(body.decode('utf-8'))
         last_update = make_aware(datetime.datetime.strptime(data['current_time'], '%Y/%m/%d_%H:%M:%S'))
         eta = None
@@ -53,6 +51,7 @@ def update_drone_location_callback(ch, method, properties, body):
                 mission.eta = eta
                 mission.last_update = last_update
                 mission.save()
+                save_waypoints(mission, data["path"])
             except IndexError:
                 print("Recieved message about mission {}, which does not seem to exist!".format(mission_id))
 
@@ -80,3 +79,16 @@ def update_drone_location_callback(ch, method, properties, body):
         traceback.print_exc()
     #Always ACK for now
     ch.basic_ack(delivery_tag = method.delivery_tag)
+
+def save_waypoints(mission, waypoints):
+    from EmergencyCommon.models import Waypoint
+    if not mission.waypoint_set.all().count():
+        waypoints_to_create = []
+        for i in range(len(waypoints)):
+            waypoints_to_create.append(Waypoint(mission = mission,
+                                                latitude = waypoints[i]['latitude'],
+                                                longitude = waypoints[i]['longitude'],
+                                                altitude = waypoints[i]['altitude'],
+                                                order = i
+                                                ))
+            Waypoint.objects.bulk_create(waypoints_to_create)

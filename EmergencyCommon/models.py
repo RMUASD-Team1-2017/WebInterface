@@ -8,7 +8,7 @@ class Drone(models.Model):
     latitude = models.FloatField(null = True)
     longitude = models.FloatField(null = True)
     altitude = models.FloatField(null = True)
-    #Location reported by OES in case of GCS 
+    #Location reported by OES in case of GCS
     oes_latitude = models.FloatField(null = True)
     oes_longitude = models.FloatField(null = True)
     oes_altitude = models.FloatField(null = True)
@@ -32,6 +32,14 @@ class DroneMission(models.Model):
     call_latitude = models.FloatField(null = True, default = None, blank=True)
     accepted = models.NullBooleanField(default = None, blank=True)
     last_update = models.DateTimeField(null = True, blank=True)
+
+
+class Waypoint(models.Model):
+    mission = models.ForeignKey(DroneMission, on_delete = models.CASCADE)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    altitude = models.FloatField(default = 0)
+    order = models.IntegerField()
 
 class DronePosition(models.Model):
     the_drone = models.ForeignKey(Drone, on_delete = models.CASCADE)
